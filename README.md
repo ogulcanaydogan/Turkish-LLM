@@ -3,18 +3,18 @@
   <p align="center">
     An open-source family of large language models purpose-built for the Turkish language
     <br />
-    <a href="https://huggingface.co/spaces/ogulcanaydogan/turkish-llm-14b-chat"><strong>Try the 14B Demo</strong></a>
+    <a href="https://huggingface.co/spaces/ogulcanaydogan/Turkish-LLM-14B-Chat"><strong>Try the 14B Demo</strong></a>
     &middot;
-    <a href="https://huggingface.co/spaces/ogulcanaydogan/turkish-llm-7b-chat"><strong>Try the 7B Demo</strong></a>
+    <a href="https://huggingface.co/spaces/ogulcanaydogan/Turkish-LLM-7B-Chat"><strong>Try the 7B Demo</strong></a>
     &middot;
-    <a href="https://huggingface.co/datasets/ogulcanaydogan/turkish-llm-v10-training"><strong>Training Dataset</strong></a>
+    <a href="https://huggingface.co/datasets/ogulcanaydogan/Turkish-LLM-v10-Training"><strong>Training Dataset</strong></a>
   </p>
 </p>
 
 <p align="center">
-  <a href="https://huggingface.co/ogulcanaydogan/turkish-llm-14b-instruct"><img src="https://img.shields.io/badge/HuggingFace-14B_Instruct-yellow?style=for-the-badge&logo=huggingface" alt="14B Model"></a>
-  <a href="https://huggingface.co/ogulcanaydogan/turkish-llm-7b-instruct"><img src="https://img.shields.io/badge/HuggingFace-7B_Instruct-yellow?style=for-the-badge&logo=huggingface" alt="7B Model"></a>
-  <a href="https://huggingface.co/datasets/ogulcanaydogan/turkish-llm-v10-training"><img src="https://img.shields.io/badge/Dataset-144K_samples-blue?style=for-the-badge&logo=huggingface" alt="Dataset"></a>
+  <a href="https://huggingface.co/ogulcanaydogan/Turkish-LLM-14B-Instruct"><img src="https://img.shields.io/badge/HuggingFace-14B_Instruct-yellow?style=for-the-badge&logo=huggingface" alt="14B Model"></a>
+  <a href="https://huggingface.co/ogulcanaydogan/Turkish-LLM-7B-Instruct"><img src="https://img.shields.io/badge/HuggingFace-7B_Instruct-yellow?style=for-the-badge&logo=huggingface" alt="7B Model"></a>
+  <a href="https://huggingface.co/datasets/ogulcanaydogan/Turkish-LLM-v10-Training"><img src="https://img.shields.io/badge/Dataset-144K_samples-blue?style=for-the-badge&logo=huggingface" alt="Dataset"></a>
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache_2.0-green?style=for-the-badge" alt="License"></a>
 </p>
 
@@ -37,8 +37,8 @@ Turkish is spoken by over 80 million native speakers, yet remains significantly 
 
 | Model | Parameters | Base Architecture | Training Method | Hardware | Demo |
 |-------|-----------|-------------------|-----------------|----------|------|
-| [turkish-llm-14b-instruct](https://huggingface.co/ogulcanaydogan/turkish-llm-14b-instruct) | 14.7B | Qwen2.5-14B-Instruct | SFT | A100 80GB | [Chat](https://huggingface.co/spaces/ogulcanaydogan/turkish-llm-14b-chat) |
-| [turkish-llm-7b-instruct](https://huggingface.co/ogulcanaydogan/turkish-llm-7b-instruct) | 7B | Turkcell-LLM-7b-v1 | LoRA (r=64, α=128) | A100 80GB | [Chat](https://huggingface.co/spaces/ogulcanaydogan/turkish-llm-7b-chat) |
+| [turkish-llm-14b-instruct](https://huggingface.co/ogulcanaydogan/Turkish-LLM-14B-Instruct) | 14.7B | Qwen2.5-14B-Instruct | SFT | A100 80GB | [Chat](https://huggingface.co/spaces/ogulcanaydogan/Turkish-LLM-14B-Chat) |
+| [turkish-llm-7b-instruct](https://huggingface.co/ogulcanaydogan/Turkish-LLM-7B-Instruct) | 7B | Turkcell-LLM-7b-v1 | LoRA (r=64, α=128) | A100 80GB | [Chat](https://huggingface.co/spaces/ogulcanaydogan/Turkish-LLM-7B-Chat) |
 
 ## Architecture
 
@@ -75,7 +75,7 @@ The training data consists of **144,000 Turkish instruction-response pairs** cov
 | General Knowledge | Education, culture, daily life | Broad conversational ability |
 | Anti-Repetition | Specially crafted examples | Fluent prose generation without loops |
 
-The full dataset is publicly available: [`ogulcanaydogan/turkish-llm-v10-training`](https://huggingface.co/datasets/ogulcanaydogan/turkish-llm-v10-training)
+The full dataset is publicly available: [`ogulcanaydogan/Turkish-LLM-v10-Training`](https://huggingface.co/datasets/ogulcanaydogan/Turkish-LLM-v10-Training)
 
 ### Training Configuration
 
@@ -118,7 +118,7 @@ Training was orchestrated using the [LowResource-LLM-Forge](https://github.com/o
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 
-model_id = "ogulcanaydogan/turkish-llm-14b-instruct"
+model_id = "ogulcanaydogan/Turkish-LLM-14B-Instruct"
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 model = AutoModelForCausalLM.from_pretrained(
     model_id,
@@ -147,7 +147,7 @@ print(tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_t
 
 ```bash
 pip install vllm
-vllm serve ogulcanaydogan/turkish-llm-14b-instruct \
+vllm serve ogulcanaydogan/Turkish-LLM-14B-Instruct \
     --dtype float16 \
     --max-model-len 4096
 ```
@@ -155,7 +155,7 @@ vllm serve ogulcanaydogan/turkish-llm-14b-instruct \
 ### Ollama (Local)
 
 ```bash
-ollama run hf.co/ogulcanaydogan/turkish-llm-7b-instruct
+ollama run hf.co/ogulcanaydogan/Turkish-LLM-7B-Instruct
 ```
 
 ### CLI Inference

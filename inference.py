@@ -8,8 +8,8 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 MODELS = {
-    "7b": "ogulcanaydogan/turkish-llm-7b-instruct",
-    "14b": "ogulcanaydogan/turkish-llm-14b-instruct",
+    "7b": "ogulcanaydogan/Turkish-LLM-7B-Instruct",
+    "14b": "ogulcanaydogan/Turkish-LLM-14B-Instruct",
 }
 
 SYSTEM_PROMPT = "Sen yardimci bir Turkce yapay zeka asistanisin."

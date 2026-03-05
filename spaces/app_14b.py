@@ -12,7 +12,7 @@ SYSTEM_PROMPT = "Sen Turkce konusan bir yapay zeka asistanisin. Her zaman Turkce
 def load_model():
     global model, tokenizer
     if model is None:
-        model_id = "ogulcanaydogan/turkish-llm-14b-instruct"
+        model_id = "ogulcanaydogan/Turkish-LLM-14B-Instruct"
         tokenizer = AutoTokenizer.from_pretrained(model_id)
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
