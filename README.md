@@ -14,6 +14,7 @@
 <p align="center">
   <a href="https://huggingface.co/ogulcanaydogan/Turkish-LLM-14B-Instruct"><img src="https://img.shields.io/badge/HuggingFace-14B_Instruct-yellow?style=for-the-badge&logo=huggingface" alt="14B Model"></a>
   <a href="https://huggingface.co/ogulcanaydogan/Turkish-LLM-7B-Instruct"><img src="https://img.shields.io/badge/HuggingFace-7B_Instruct-yellow?style=for-the-badge&logo=huggingface" alt="7B Model"></a>
+  <a href="https://huggingface.co/ogulcanaydogan/Turkish-LLM-14B-Instruct-GGUF"><img src="https://img.shields.io/badge/GGUF-Quantized-orange?style=for-the-badge&logo=huggingface" alt="GGUF"></a>
   <a href="https://huggingface.co/datasets/ogulcanaydogan/Turkish-LLM-v10-Training"><img src="https://img.shields.io/badge/Dataset-144K_samples-blue?style=for-the-badge&logo=huggingface" alt="Dataset"></a>
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache_2.0-green?style=for-the-badge" alt="License"></a>
 </p>
@@ -32,6 +33,7 @@ Turkish is spoken by over 80 million native speakers, yet remains significantly 
 - **144,000 curated Turkish instruction-response pairs** released as an open dataset
 - **End-to-end training pipeline** for low-resource language model development
 - **Live interactive demos** running on Hugging Face Spaces with ZeroGPU
+- **GGUF quantized models** for local deployment via llama.cpp, Ollama, and LM Studio
 
 ## Model Family
 
@@ -39,6 +41,21 @@ Turkish is spoken by over 80 million native speakers, yet remains significantly 
 |-------|-----------|-------------------|-----------------|----------|------|
 | [turkish-llm-14b-instruct](https://huggingface.co/ogulcanaydogan/Turkish-LLM-14B-Instruct) | 14.7B | Qwen2.5-14B-Instruct | SFT | A100 80GB | [Chat](https://huggingface.co/spaces/ogulcanaydogan/Turkish-LLM-14B-Chat) |
 | [turkish-llm-7b-instruct](https://huggingface.co/ogulcanaydogan/Turkish-LLM-7B-Instruct) | 7B | Turkcell-LLM-7b-v1 | LoRA (r=64, α=128) | A100 80GB | [Chat](https://huggingface.co/spaces/ogulcanaydogan/Turkish-LLM-7B-Chat) |
+
+## GGUF Quantizations
+
+Pre-quantized GGUF models are available for local inference with llama.cpp, Ollama, and LM Studio.
+
+| File | Quant | Size | RAM Needed | Best For |
+|------|-------|------|------------|----------|
+| [Turkish-LLM-14B-Instruct-F16.gguf](https://huggingface.co/ogulcanaydogan/Turkish-LLM-14B-Instruct-GGUF/blob/main/Turkish-LLM-14B-Instruct-F16.gguf) | F16 | 28 GB | 32-35 GB | Full precision, A100/H100 |
+| [Turkish-LLM-14B-Instruct-Q8_0.gguf](https://huggingface.co/ogulcanaydogan/Turkish-LLM-14B-Instruct-GGUF/blob/main/Turkish-LLM-14B-Instruct-Q8_0.gguf) | Q8_0 | 15 GB | 18-20 GB | RTX 3090/4090 |
+| [Turkish-LLM-14B-Instruct-Q5_K_M.gguf](https://huggingface.co/ogulcanaydogan/Turkish-LLM-14B-Instruct-GGUF/blob/main/Turkish-LLM-14B-Instruct-Q5_K_M.gguf) | Q5_K_M | 9.8 GB | 13-14 GB | M2/M3 Mac |
+| [Turkish-LLM-14B-Instruct-Q4_K_M.gguf](https://huggingface.co/ogulcanaydogan/Turkish-LLM-14B-Instruct-GGUF/blob/main/Turkish-LLM-14B-Instruct-Q4_K_M.gguf) | Q4_K_M | 8.4 GB | 11-12 GB | M1/M2 Mac, 16GB laptop |
+
+> **Recommendation:** Q4_K_M offers the best size-to-quality ratio for most consumer hardware.
+
+Full details: [Turkish-LLM-14B-Instruct-GGUF](https://huggingface.co/ogulcanaydogan/Turkish-LLM-14B-Instruct-GGUF)
 
 ## Architecture
 
@@ -143,6 +160,48 @@ outputs = model.generate(
 print(tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True))
 ```
 
+### Ollama (Local)
+
+```bash
+# Direct from HuggingFace (no setup needed)
+ollama run hf.co/ogulcanaydogan/Turkish-LLM-14B-Instruct-GGUF:Q4_K_M
+
+# Or with a local GGUF file
+ollama create turkish-llm-14b -f Modelfile
+ollama run turkish-llm-14b "Turkiye'nin baskenti neresidir?"
+```
+
+<details>
+<summary>Example Modelfile</summary>
+
+```
+FROM Turkish-LLM-14B-Instruct-Q4_K_M.gguf
+PARAMETER temperature 0.7
+PARAMETER top_p 0.9
+PARAMETER repeat_penalty 1.1
+SYSTEM "Sen yardimci bir Turkce yapay zeka asistanisin."
+TEMPLATE "<|im_start|>system
+{{.System}}<|im_end|>
+<|im_start|>user
+{{.Prompt}}<|im_end|>
+<|im_start|>assistant
+"
+```
+
+</details>
+
+### llama.cpp
+
+```bash
+# Download
+huggingface-cli download ogulcanaydogan/Turkish-LLM-14B-Instruct-GGUF Turkish-LLM-14B-Instruct-Q4_K_M.gguf
+
+# Run inference
+./llama-cli -m Turkish-LLM-14B-Instruct-Q4_K_M.gguf \
+  -p "<|im_start|>system\nSen yardimci bir Turkce yapay zeka asistanisin.<|im_end|>\n<|im_start|>user\nTurkiye'nin baskenti neresidir?<|im_end|>\n<|im_start|>assistant\n" \
+  -n 256 --temp 0.7
+```
+
 ### vLLM (Production Serving)
 
 ```bash
@@ -152,11 +211,9 @@ vllm serve ogulcanaydogan/Turkish-LLM-14B-Instruct \
     --max-model-len 4096
 ```
 
-### Ollama (Local)
+### LM Studio
 
-```bash
-ollama run hf.co/ogulcanaydogan/Turkish-LLM-7B-Instruct
-```
+Download any GGUF file from [Turkish-LLM-14B-Instruct-GGUF](https://huggingface.co/ogulcanaydogan/Turkish-LLM-14B-Instruct-GGUF) and load it directly in [LM Studio](https://lmstudio.ai/).
 
 ### CLI Inference
 
@@ -166,9 +223,9 @@ python inference.py --model 14b --prompt "Yapay zeka nedir?"
 
 ## Hardware Requirements
 
-| Model | FP16 VRAM | INT4 VRAM | Recommended GPU |
-|-------|-----------|-----------|-----------------|
-| 14B | ~30 GB | ~8 GB | A100 / A10G / RTX 4090 |
+| Model | FP16 VRAM | GGUF Q4_K_M | Recommended GPU |
+|-------|-----------|-------------|-----------------|
+| 14B | ~30 GB | ~8.4 GB | A100 / RTX 4090 (FP16) or any 16GB+ (GGUF) |
 | 7B | ~14 GB | ~4 GB | RTX 3090 / RTX 4080 / Apple M-series |
 
 ## Project Structure
@@ -187,6 +244,7 @@ Turkish-LLM/
 | Project | Description |
 |---------|-------------|
 | [LowResource-LLM-Forge](https://github.com/ogulcanaydogan/LowResource-LLM-Forge) | Fine-tuning pipeline for low-resource language models |
+| [Turkish-LLM-14B-Instruct-GGUF](https://huggingface.co/ogulcanaydogan/Turkish-LLM-14B-Instruct-GGUF) | GGUF quantized models for local deployment |
 | [CCTV Customer Analytics](https://huggingface.co/spaces/ogulcanaydogan/cctv-customer-analytics) | Computer vision for object detection and tracking |
 
 ## Limitations
