@@ -29,18 +29,38 @@ Turkish is spoken by over 80 million native speakers, yet remains significantly 
 
 ### Key Contributions
 
-- **First open-source Turkish LLM family** spanning 7B and 14B parameters
+- **First comprehensive open-source Turkish LLM family** spanning 1.5B to 32B parameters
+- **Multi-stage training pipeline**: SFT + DPO (Direct Preference Optimization) for human-aligned responses
 - **144,000 curated Turkish instruction-response pairs** released as an open dataset
-- **End-to-end training pipeline** for low-resource language model development
+- **End-to-end training pipeline** via [LowResource-LLM-Forge](https://github.com/ogulcanaydogan/LowResource-LLM-Forge) — reusable for any low-resource language
 - **Live interactive demos** running on Hugging Face Spaces with ZeroGPU
 - **GGUF quantized models** for local deployment via llama.cpp, Ollama, and LM Studio
 
+> Browse the full collection: [Turkish LLM Family on HuggingFace](https://huggingface.co/collections/ogulcanaydogan/turkish-llm-family-69b303b4ef1c36caffca4e94)
+
 ## Model Family
 
-| Model | Parameters | Base Architecture | Training Method | Hardware | Demo |
-|-------|-----------|-------------------|-----------------|----------|------|
-| [turkish-llm-14b-instruct](https://huggingface.co/ogulcanaydogan/Turkish-LLM-14B-Instruct) | 14.7B | Qwen2.5-14B-Instruct | SFT | A100 80GB | [Chat](https://huggingface.co/spaces/ogulcanaydogan/Turkish-LLM-14B-Chat) |
-| [turkish-llm-7b-instruct](https://huggingface.co/ogulcanaydogan/Turkish-LLM-7B-Instruct) | 7B | Turkcell-LLM-7b-v1 | LoRA (r=64, α=128) | A100 80GB | [Chat](https://huggingface.co/spaces/ogulcanaydogan/Turkish-LLM-7B-Chat) |
+| Model | Parameters | Base | Method | Hardware | Status |
+|-------|-----------|------|--------|----------|--------|
+| [Turkish-LLM-14B-Instruct](https://huggingface.co/ogulcanaydogan/Turkish-LLM-14B-Instruct) | 14.7B | Qwen2.5-14B-Instruct | SFT + DPO | A100 80GB | **Available** |
+| [Turkish-LLM-7B-Instruct](https://huggingface.co/ogulcanaydogan/Turkish-LLM-7B-Instruct) | 7B | Turkcell-LLM-7b-v1 | LoRA SFT + DPO | V100 32GB | **Available** |
+| [Turkish-LLM-14B-Instruct-GGUF](https://huggingface.co/ogulcanaydogan/Turkish-LLM-14B-Instruct-GGUF) | 14.7B | — | Q4/Q5/Q8/F16 | CPU/GPU | **Available** |
+| Turkish-LLM-32B-Instruct | 32B | Qwen2.5-32B-Instruct | QLoRA SFT | A100 80GB | Coming Soon |
+| Turkish-LLM-3B-Instruct | 3B | Qwen2.5-3B-Instruct | LoRA SFT | V100 32GB | Coming Soon |
+| Turkish-LLM-1.5B-Instruct | 1.5B | Qwen2.5-1.5B-Instruct | LoRA SFT | V100 32GB | Coming Soon |
+
+## Benchmark Results
+
+| Model | MMLU_TR | XCOPA_TR | XNLI_TR | TurkishMMLU |
+|-------|---------|----------|---------|-------------|
+| Qwen2.5-14B-Instruct (base) | 59.47 | 66.80 | 41.53 | — |
+| **Turkish-LLM-14B-Instruct** | **59.77** | **66.00** | **43.33** | **61.33** |
+| Δ vs base | +0.30 | -0.80 | **+1.80** | — |
+
+Key findings:
+- **+1.8 points on XNLI_TR**: Significant improvement in Turkish natural language inference
+- **61.33 on TurkishMMLU**: Strong performance on Turkish-specific knowledge benchmarks
+- MMLU_TR maintained near base level — fine-tuning preserves general knowledge while improving Turkish
 
 ## GGUF Quantizations
 
@@ -94,33 +114,42 @@ The training data consists of **144,000 Turkish instruction-response pairs** cov
 
 The full dataset is publicly available: [`ogulcanaydogan/Turkish-LLM-v10-Training`](https://huggingface.co/datasets/ogulcanaydogan/Turkish-LLM-v10-Training)
 
-### Training Configuration
+### Training Pipeline
+
+Each model goes through a multi-stage training process:
+
+```
+Base Model → SFT (Supervised Fine-Tuning) → DPO (Direct Preference Optimization) → Merge → Evaluate → Publish
+```
 
 <table>
 <tr><td>
 
-**14B Model (SFT)**
-| Parameter | Value |
-|-----------|-------|
-| Base model | Qwen2.5-14B-Instruct |
-| Method | Full SFT alignment |
-| Precision | bfloat16 |
-| Hardware | NVIDIA A100 80GB |
+**Stage 1: SFT**
+| Parameter | 14B | 7B |
+|-----------|-----|-----|
+| Base model | Qwen2.5-14B-Instruct | Turkcell-LLM-7b-v1 |
+| LoRA rank | 32 | 32 |
+| LoRA alpha | 64 | 64 |
+| Learning rate | 2e-5 | 1e-5 |
+| Batch size | 16 (eff.) | 16 (eff.) |
+| Seq length | 4,096 | 2,048 |
+| Precision | bfloat16 | float16 |
+| Hardware | A100 80GB | V100 32GB |
+| Dataset | 144K Turkish SFT pairs | 144K Turkish SFT pairs |
 
 </td><td>
 
-**7B Model (LoRA)**
+**Stage 2: DPO**
 | Parameter | Value |
 |-----------|-------|
-| Base model | Turkcell-LLM-7b-v1 |
-| Method | LoRA (r=64, α=128) |
-| Learning rate | 5e-6 |
-| Batch size | 16 |
-| Seq length | 2,048 |
-| Training time | ~10 hours |
-| Final loss | 1.88 |
-| Precision | bfloat16 |
-| Hardware | NVIDIA A100 80GB |
+| Dataset | selimc/orpo-dpo-mix-TR-20k |
+| Preference pairs | 19,900 |
+| Beta | 0.1 |
+| Learning rate | 5e-7 |
+| LoRA rank | 32 |
+| Schedule | Cosine with warmup |
+| Epochs | 1 |
 
 </td></tr>
 </table>
@@ -239,13 +268,27 @@ Turkish-LLM/
     └── requirements.txt
 ```
 
+## Roadmap
+
+- [x] 14B SFT + DPO model (available)
+- [x] 7B SFT model (available)
+- [x] GGUF quantizations (Q4/Q5/Q8/F16)
+- [x] Training dataset release (144K pairs)
+- [x] HuggingFace collection
+- [ ] 32B model (QLoRA on A100)
+- [ ] 3B model (edge/mobile deployment)
+- [ ] 1.5B model (embedded/IoT)
+- [ ] Turkish Speech models (ASR + TTS)
+- [ ] End-to-end Turkish voice assistant demo
+- [ ] Academic paper (arxiv preprint)
+
 ## Related Projects
 
 | Project | Description |
 |---------|-------------|
-| [LowResource-LLM-Forge](https://github.com/ogulcanaydogan/LowResource-LLM-Forge) | Fine-tuning pipeline for low-resource language models |
+| [LowResource-LLM-Forge](https://github.com/ogulcanaydogan/LowResource-LLM-Forge) | Language-agnostic LLM fine-tuning pipeline for low-resource languages |
+| [Turkish LLM Family (HF Collection)](https://huggingface.co/collections/ogulcanaydogan/turkish-llm-family-69b303b4ef1c36caffca4e94) | All models, datasets, and demos in one place |
 | [Turkish-LLM-14B-Instruct-GGUF](https://huggingface.co/ogulcanaydogan/Turkish-LLM-14B-Instruct-GGUF) | GGUF quantized models for local deployment |
-| [CCTV Customer Analytics](https://huggingface.co/spaces/ogulcanaydogan/cctv-customer-analytics) | Computer vision for object detection and tracking |
 
 ## Limitations
 
